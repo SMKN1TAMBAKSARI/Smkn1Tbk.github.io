@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Harian - SMKN 1 TAMBAKSARI</title>
+    <link rel="stylesheet" href="./style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="absensi-page">
+    <div class="container">
+        <header class="page-header">
+            <a href="./main.html" class="back-btn">← Kembali ke Dashboard</a>
+            <h1>Absensi Harian</h1>
+        </header>
+
+        <div class="form-card">
+            <h2>Form Absensi Hari Ini</h2>
+            <div class="current-date">
+                <p id="currentDate"></p>
+            </div>
+            
+            <form id="absensiForm">
+                <div class="input-group">
+                    <label for="absensiNama">Nama Lengkap</label>
+                    <input type="text" id="absensiNama" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="absensiKelas">Kelas</label>
+                    <input type="text" id="absensiKelas" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="absensiKeterangan">Keterangan</label>
+                    <select id="absensiKeterangan" required>
+                        <option value="">Pilih Keterangan</option>
+                        <option value="Hadir">Hadir</option>
+                        <option value="Izin">Izin</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Alpha">Alpha</option>
+                    </select>
+                </div>
+                
+                <div class="input-group" id="alasanGroup" style="display: none;">
+                    <label for="absensiAlasan">Alasan (Opsional)</label>
+                    <textarea id="absensiAlasan" rows="3" placeholder="Jelaskan alasan jika diperlukan..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary">Simpan Absensi</button>
+            </form>
+        </div>
+
+        <div class="success-message hidden" id="successMessage">
+            <div class="success-content">
+                <div class="success-icon">✓</div>
+                <h3>Absensi Berhasil Disimpan!</h3>
+                <p>Data absensi Anda telah tercatat dalam sistem.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Menyimpan data...</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="./firebase-config.js"></script>
+    <script src="./script.js"></script>
+</body>
+</html>

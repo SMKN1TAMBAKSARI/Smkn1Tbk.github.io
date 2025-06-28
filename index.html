@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMKN 1 TAMBAKSARI - Login Siswa</title>
+    <link rel="stylesheet" href="./style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="bubble-animation">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="school-header">
+                <img src="./bg1.png" alt="SMKN 1 TAMBAKSARI" class="school-logo">
+                <h1 class="school-name">SMKN 1 TAMBAKSARI</h1>
+                <p class="school-subtitle">Sistem Absensi Siswa</p>
+            </div>
+
+            <div class="auth-forms">
+                <!-- Login Form -->
+                <div class="form-container" id="loginForm">
+                    <h2>Masuk Akun</h2>
+                    <form id="loginFormElement">
+                        <div class="input-group">
+                            <label for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="loginPassword">Kata Sandi</label>
+                            <input type="password" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Masuk</button>
+                    </form>
+                    <p class="form-switch">
+                        Belum punya akun? <a href="#" id="showSignup">Daftar di sini</a>
+                    </p>
+                </div>
+
+                <!-- Signup Form -->
+                <div class="form-container hidden" id="signupForm">
+                    <h2>Daftar Akun Baru</h2>
+                    <form id="signupFormElement">
+                        <div class="input-group">
+                            <label for="signupName">Nama Lengkap</label>
+                            <input type="text" id="signupName" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupEmail">Email</label>
+                            <input type="email" id="signupEmail" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupPassword">Kata Sandi</label>
+                            <input type="password" id="signupPassword" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupClass">Kelas</label>
+                            <input type="text" id="signupClass" placeholder="Contoh: XII RPL 1" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Daftar</button>
+                    </form>
+                    <p class="form-switch">
+                        Sudah punya akun? <a href="#" id="showLogin">Masuk di sini</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Memproses...</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="./firebase-config.js"></script>
+    <script src="./script.js"></script>
+</body>
+</html>

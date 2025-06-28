@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - SMKN 1 TAMBAKSARI</title>
+    <link rel="stylesheet" href="./style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-page">
+    <div class="container">
+        <header class="page-header">
+            <a href="./main.html" class="back-btn">← Kembali ke Dashboard</a>
+            <h1>Panel Admin</h1>
+        </header>
+
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="absensi">Data Absensi</button>
+            <button class="tab-btn" data-tab="izin">Data Izin/Sakit</button>
+        </div>
+
+        <!-- Absensi Data Tab -->
+        <div class="tab-content active" id="absensiTab">
+            <div class="data-card">
+                <div class="card-header">
+                    <h2>Data Absensi Harian</h2>
+                    <div class="filter-controls">
+                        <input type="date" id="filterDate" class="filter-input">
+                        <select id="filterStatus" class="filter-input">
+                            <option value="">Semua Status</option>
+                            <option value="Hadir">Hadir</option>
+                            <option value="Izin">Izin</option>
+                            <option value="Sakit">Sakit</option>
+                            <option value="Alpha">Alpha</option>
+                        </select>
+                        <button id="filterBtn" class="btn-secondary">Filter</button>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <table id="absensiTable">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Nama</th>
+                                <th>Kelas</th>
+                                <th>Status</th>
+                                <th>Alasan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="absensiTableBody">
+                            <tr>
+                                <td colspan="5" class="no-data">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Izin/Sakit Data Tab -->
+        <div class="tab-content" id="izinTab">
+            <div class="data-card">
+                <div class="card-header">
+                    <h2>Data Formulir Izin/Sakit</h2>
+                    <div class="filter-controls">
+                        <input type="date" id="filterIzinDate" class="filter-input">
+                        <select id="filterIzinType" class="filter-input">
+                            <option value="">Semua Jenis</option>
+                            <option value="Izin">Izin</option>
+                            <option value="Sakit">Sakit</option>
+                        </select>
+                        <button id="filterIzinBtn" class="btn-secondary">Filter</button>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <table id="izinTable">
+                        <thead>
+                            <tr>
+                                <th>Tanggal Pengajuan</th>
+                                <th>Nama</th>
+                                <th>Jenis</th>
+                                <th>Tanggal Izin</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="izinTableBody">
+                            <tr>
+                                <td colspan="5" class="no-data">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Memuat data...</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="./firebase-config.js"></script>
+    <script src="./script.js"></script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SMKN 1 TAMBAKSARI</title>
+    <link rel="stylesheet" href="./style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="main-page">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="./default-profile.png" alt="Profile" class="profile-image">
+            <h3 id="userName">Nama Siswa</h3>
+            <p id="userClass">Kelas</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <span>📊</span> Dashboard
+            </a>
+            <a href="#" class="nav-item" data-page="izin">
+                <span>📝</span> Formulir Izin/Sakit
+            </a>
+            <a href="./absensi.html" class="nav-item">
+                <span>📅</span> Absensi Harian
+            </a>
+            <a href="#" class="nav-item" id="adminAccess">
+                <span>👨‍💼</span> Riwayat Absensi (Admin)
+            </a>
+            <a href="#" class="nav-item" id="loginAdmin">
+                <span>🔐</span> Login Admin
+            </a>
+            <a href="#" class="nav-item" id="logoutBtn">
+                <span>🚪</span> Keluar
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="main-header">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1>Dashboard Siswa</h1>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="content-section" id="dashboardContent">
+            <div class="welcome-card">
+                <h2>Selamat Datang!</h2>
+                <p>Sistem Absensi SMKN 1 TAMBAKSARI</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Kehadiran Bulan Ini</h3>
+                    <div class="stat-number" id="monthlyAttendance">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Izin/Sakit</h3>
+                    <div class="stat-number" id="totalAbsence">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Izin/Sakit Form Content -->
+        <div class="content-section hidden" id="izinContent">
+            <div class="form-card">
+                <h2>Formulir Izin/Sakit</h2>
+                <form id="izinForm">
+                    <div class="input-group">
+                        <label for="izinNama">Nama Lengkap</label>
+                        <input type="text" id="izinNama" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="izinJenis">Jenis</label>
+                        <select id="izinJenis" required>
+                            <option value="">Pilih Jenis</option>
+                            <option value="Izin">Izin</option>
+                            <option value="Sakit">Sakit</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="izinTanggal">Tanggal</label>
+                        <input type="date" id="izinTanggal" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="izinDeskripsi">Deskripsi/Alasan</label>
+                        <textarea id="izinDeskripsi" rows="4" placeholder="Jelaskan alasan izin/sakit..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Kirim Formulir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Memproses...</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="./firebase-config.js"></script>
+    <script src="./script.js"></script>
+</body>
+</html>
