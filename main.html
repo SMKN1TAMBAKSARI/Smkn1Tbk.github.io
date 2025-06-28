@@ -11,7 +11,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="./default-profile.png" alt="Profile" class="profile-image">
+            <img src="./bg1.png" alt="Profile" class="profile-image">
             <h3 id="userName">Nama Siswa</h3>
             <p id="userClass">Kelas</p>
         </div>
@@ -57,12 +57,19 @@
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Kehadiran Bulan Ini</h3>
-                    <div class="stat-number" id="monthlyAttendance">-</div>
+                    <h3>Kehadiran Hari Ini</h3>
+                    <div class="stat-number" id="todayAttendance">-</div>
+                    <p class="stat-desc">Siswa hadir hari ini</p>
                 </div>
                 <div class="stat-card">
                     <h3>Total Izin/Sakit</h3>
                     <div class="stat-number" id="totalAbsence">-</div>
+                    <p class="stat-desc">Formulir izin/sakit</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Kehadiran Bulan Ini</h3>
+                    <div class="stat-number" id="monthlyAttendance">-</div>
+                    <p class="stat-desc">Hari hadir bulan ini</p>
                 </div>
             </div>
         </div>
@@ -94,6 +101,26 @@
                     </div>
                     <button type="submit" class="btn-primary">Kirim Formulir</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Password Modal -->
+    <div class="modal-overlay hidden" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Login Admin</h3>
+                <button class="modal-close" id="closeAdminModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="adminPassword">Kata Sandi Admin</label>
+                    <input type="password" id="adminPassword" placeholder="Masukkan kata sandi admin..." required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelAdmin">Batal</button>
+                    <button type="button" class="btn-primary" id="submitAdmin">Masuk</button>
+                </div>
             </div>
         </div>
     </div>

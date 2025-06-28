@@ -200,25 +200,59 @@ if (document.getElementById('hamburger')) {
         });
     });
 
-    // Admin access
+    // Admin modal functionality
+    const adminModal = document.getElementById('adminModal');
+    const adminPasswordInput = document.getElementById('adminPassword');
+    
+    function showAdminModal() {
+        adminModal.classList.remove('hidden');
+        adminPasswordInput.focus();
+    }
+    
+    function hideAdminModal() {
+        adminModal.classList.add('hidden');
+        adminPasswordInput.value = '';
+    }
+    
+    function checkAdminPassword() {
+        const password = adminPasswordInput.value;
+        if (password === 'Tambaksari322') {
+            hideAdminModal();
+            window.location.href = './admin.html';
+        } else {
+            showMessage('Kata sandi salah!', 'error');
+            adminPasswordInput.value = '';
+            adminPasswordInput.focus();
+        }
+    }
+
+    // Admin access events
     document.getElementById('adminAccess').addEventListener('click', (e) => {
         e.preventDefault();
-        const password = prompt('Masukkan kata sandi admin:');
-        if (password === 'Tambaksari322') {
-            window.location.href = './admin.html';
-        } else if (password !== null) {
-            showMessage('Kata sandi salah!', 'error');
-        }
+        showAdminModal();
     });
 
-    // Login admin
     document.getElementById('loginAdmin').addEventListener('click', (e) => {
         e.preventDefault();
-        const password = prompt('Masukkan kata sandi admin:');
-        if (password === 'Tambaksari322') {
-            window.location.href = './admin.html';
-        } else if (password !== null) {
-            showMessage('Kata sandi salah!', 'error');
+        showAdminModal();
+    });
+
+    // Modal events
+    document.getElementById('closeAdminModal').addEventListener('click', hideAdminModal);
+    document.getElementById('cancelAdmin').addEventListener('click', hideAdminModal);
+    document.getElementById('submitAdmin').addEventListener('click', checkAdminPassword);
+    
+    // Enter key support for admin password
+    adminPasswordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            checkAdminPassword();
+        }
+    });
+    
+    // Close modal when clicking outside
+    adminModal.addEventListener('click', (e) => {
+        if (e.target === adminModal) {
+            hideAdminModal();
         }
     });
 
@@ -280,6 +314,7 @@ if (document.getElementById('hamburger')) {
                 hideLoading();
                 showMessage('Formulir berhasil dikirim!');
                 izinForm.reset();
+                loadStats(); // Refresh stats
             } catch (error) {
                 hideLoading();
                 showMessage('Gagal mengirim formulir: ' + error.message, 'error');
@@ -289,29 +324,39 @@ if (document.getElementById('hamburger')) {
 
     // Load stats
     async function loadStats() {
-        if (!currentUser) return;
-
         try {
-            // Get current month attendance
+            const today = new Date().toISOString().split('T')[0];
             const now = new Date();
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
             
-            const attendanceQuery = await db.collection('absensi')
-                .where('userId', '==', currentUser.uid)
-                .where('createdAt', '>=', startOfMonth)
+            // Get today's attendance count (all students who marked "Hadir" today)
+            const todayAttendanceQuery = await db.collection('absensi')
+                .where('tanggal', '==', today)
                 .where('keterangan', '==', 'Hadir')
                 .get();
             
-            document.getElementById('monthlyAttendance').textContent = attendanceQuery.size;
+            document.getElementById('todayAttendance').textContent = todayAttendanceQuery.size;
 
-            // Get total absence
-            const absenceQuery = await db.collection('izin_sakit')
-                .where('userId', '==', currentUser.uid)
-                .get();
-            
-            document.getElementById('totalAbsence').textContent = absenceQuery.size;
+            // Get total izin/sakit forms (all students)
+            const izinSakitQuery = await db.collection('izin_sakit').get();
+            document.getElementById('totalAbsence').textContent = izinSakitQuery.size;
+
+            // Get current user's monthly attendance
+            if (currentUser) {
+                const monthlyAttendanceQuery = await db.collection('absensi')
+                    .where('userId', '==', currentUser.uid)
+                    .where('createdAt', '>=', startOfMonth)
+                    .where('keterangan', '==', 'Hadir')
+                    .get();
+                
+                document.getElementById('monthlyAttendance').textContent = monthlyAttendanceQuery.size;
+            }
         } catch (error) {
             console.error('Error loading stats:', error);
+            // Set default values on error
+            document.getElementById('todayAttendance').textContent = '0';
+            document.getElementById('totalAbsence').textContent = '0';
+            document.getElementById('monthlyAttendance').textContent = '0';
         }
     }
 
