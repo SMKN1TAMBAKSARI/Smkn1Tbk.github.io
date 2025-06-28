@@ -325,111 +325,106 @@ if (document.getElementById('hamburger')) {
         });
     }
 
-    // Load stats function - FIXED VERSION
+    // FIXED Load stats function - Mengambil data dari Firebase yang sebenarnya
     async function loadStats() {
-        console.log('Loading stats...');
+        console.log('🔄 Loading dashboard stats...');
         
         try {
+            // Get today's date in YYYY-MM-DD format
             const today = new Date();
-            const todayString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const todayString = today.toISOString().split('T')[0]; // Format: 2025-01-28
+            console.log('📅 Today date:', todayString);
             
-            // 1. Get today's attendance count (all students who marked "Hadir" today)
-            console.log('Fetching today attendance for date:', todayString);
-            const todayAttendanceQuery = await db.collection('absensi')
+            // 1. KEHADIRAN HARI INI - Count all students who marked "Hadir" today
+            console.log('📊 Fetching today attendance...');
+            const todayAttendanceSnapshot = await db.collection('absensi')
                 .where('tanggal', '==', todayString)
                 .where('keterangan', '==', 'Hadir')
                 .get();
             
-            const todayCount = todayAttendanceQuery.size;
-            console.log('Today attendance count:', todayCount);
-            document.getElementById('todayAttendance').textContent = todayCount;
+            const todayAttendanceCount = todayAttendanceSnapshot.size;
+            console.log('✅ Today attendance count:', todayAttendanceCount);
+            document.getElementById('todayAttendance').textContent = todayAttendanceCount;
 
-            // 2. Get total izin/sakit forms (all students)
-            console.log('Fetching total izin/sakit forms...');
-            const izinSakitQuery = await db.collection('izin_sakit').get();
-            const totalIzinSakit = izinSakitQuery.size;
-            console.log('Total izin/sakit count:', totalIzinSakit);
-            document.getElementById('totalAbsence').textContent = totalIzinSakit;
+            // 2. TOTAL IZIN/SAKIT - Count all izin/sakit forms ever submitted
+            console.log('📊 Fetching total izin/sakit...');
+            const izinSakitSnapshot = await db.collection('izin_sakit').get();
+            const totalIzinSakitCount = izinSakitSnapshot.size;
+            console.log('✅ Total izin/sakit count:', totalIzinSakitCount);
+            document.getElementById('totalAbsence').textContent = totalIzinSakitCount;
 
-            // 3. Get current user's monthly attendance
+            // 3. KEHADIRAN BULAN INI - Count current user's attendance this month
             if (currentUser) {
-                console.log('Fetching monthly attendance for user:', currentUser.uid);
-                const monthlyAttendanceQuery = await db.collection('absensi')
+                console.log('📊 Fetching monthly attendance for user:', currentUser.uid);
+                
+                // Get start of current month
+                const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                const startOfMonthString = startOfMonth.toISOString().split('T')[0];
+                console.log('📅 Start of month:', startOfMonthString);
+                
+                // Get all attendance records for current user this month
+                const monthlyAttendanceSnapshot = await db.collection('absensi')
                     .where('userId', '==', currentUser.uid)
                     .where('keterangan', '==', 'Hadir')
                     .get();
                 
-                // Filter by month manually since Firestore doesn't support date range with string dates
+                // Filter by month manually since we need to check date strings
                 let monthlyCount = 0;
-                monthlyAttendanceQuery.forEach(doc => {
+                monthlyAttendanceSnapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.createdAt && data.createdAt.toDate() >= startOfMonth) {
+                    const attendanceDate = data.tanggal; // Format: "2025-01-28"
+                    
+                    if (attendanceDate && attendanceDate >= startOfMonthString) {
                         monthlyCount++;
-                    } else if (data.tanggal) {
-                        const attendanceDate = new Date(data.tanggal);
-                        if (attendanceDate >= startOfMonth) {
-                            monthlyCount++;
-                        }
                     }
                 });
                 
-                console.log('Monthly attendance count:', monthlyCount);
+                console.log('✅ Monthly attendance count:', monthlyCount);
                 document.getElementById('monthlyAttendance').textContent = monthlyCount;
             } else {
+                console.log('❌ No user logged in');
                 document.getElementById('monthlyAttendance').textContent = '0';
             }
             
-            console.log('Stats loaded successfully');
+            console.log('✅ All stats loaded successfully!');
+            
         } catch (error) {
-            console.error('Error loading stats:', error);
+            console.error('❌ Error loading stats:', error);
             // Set default values on error
             document.getElementById('todayAttendance').textContent = '0';
             document.getElementById('totalAbsence').textContent = '0';
             document.getElementById('monthlyAttendance').textContent = '0';
+            showMessage('Gagal memuat statistik dashboard', 'error');
         }
     }
 
-    // Initialize main page with proper auth state handling
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            currentUser = user;
-            console.log('User authenticated:', user.uid);
-            await loadUserInfo();
-            await loadStats();
-            
-            // Set up real-time listeners for stats updates
-            setupStatsListeners();
-        } else {
-            console.log('No user authenticated');
-            // Set default values when no user
-            document.getElementById('todayAttendance').textContent = '0';
-            document.getElementById('totalAbsence').textContent = '0';
-            document.getElementById('monthlyAttendance').textContent = '0';
-        }
-    });
-
-    // Set up real-time listeners for automatic stats updates
-    function setupStatsListeners() {
+    // Set up real-time listeners for automatic updates
+    function setupRealTimeListeners() {
+        console.log('🔄 Setting up real-time listeners...');
+        
         const today = new Date().toISOString().split('T')[0];
         
-        // Listen for changes in today's attendance
+        // 1. Listen for today's attendance changes
         db.collection('absensi')
             .where('tanggal', '==', today)
             .where('keterangan', '==', 'Hadir')
             .onSnapshot((snapshot) => {
-                console.log('Today attendance updated:', snapshot.size);
+                console.log('🔄 Today attendance updated:', snapshot.size);
                 document.getElementById('todayAttendance').textContent = snapshot.size;
+            }, (error) => {
+                console.error('❌ Error in today attendance listener:', error);
             });
 
-        // Listen for changes in izin/sakit forms
+        // 2. Listen for izin/sakit forms changes
         db.collection('izin_sakit')
             .onSnapshot((snapshot) => {
-                console.log('Izin/sakit forms updated:', snapshot.size);
+                console.log('🔄 Izin/sakit forms updated:', snapshot.size);
                 document.getElementById('totalAbsence').textContent = snapshot.size;
+            }, (error) => {
+                console.error('❌ Error in izin/sakit listener:', error);
             });
 
-        // Listen for changes in current user's attendance
+        // 3. Listen for current user's monthly attendance changes
         if (currentUser) {
             db.collection('absensi')
                 .where('userId', '==', currentUser.uid)
@@ -437,25 +432,51 @@ if (document.getElementById('hamburger')) {
                 .onSnapshot((snapshot) => {
                     const today = new Date();
                     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const startOfMonthString = startOfMonth.toISOString().split('T')[0];
                     
                     let monthlyCount = 0;
                     snapshot.forEach(doc => {
                         const data = doc.data();
-                        if (data.createdAt && data.createdAt.toDate() >= startOfMonth) {
+                        const attendanceDate = data.tanggal;
+                        
+                        if (attendanceDate && attendanceDate >= startOfMonthString) {
                             monthlyCount++;
-                        } else if (data.tanggal) {
-                            const attendanceDate = new Date(data.tanggal);
-                            if (attendanceDate >= startOfMonth) {
-                                monthlyCount++;
-                            }
                         }
                     });
                     
-                    console.log('Monthly attendance updated:', monthlyCount);
+                    console.log('🔄 Monthly attendance updated:', monthlyCount);
                     document.getElementById('monthlyAttendance').textContent = monthlyCount;
+                }, (error) => {
+                    console.error('❌ Error in monthly attendance listener:', error);
                 });
         }
+        
+        console.log('✅ Real-time listeners set up successfully!');
     }
+
+    // Initialize main page with proper auth state handling
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            currentUser = user;
+            console.log('✅ User authenticated:', user.uid);
+            
+            // Load user info first
+            await loadUserInfo();
+            
+            // Load initial stats
+            await loadStats();
+            
+            // Set up real-time listeners for automatic updates
+            setupRealTimeListeners();
+            
+        } else {
+            console.log('❌ No user authenticated');
+            // Set default values when no user
+            document.getElementById('todayAttendance').textContent = '0';
+            document.getElementById('totalAbsence').textContent = '0';
+            document.getElementById('monthlyAttendance').textContent = '0';
+        }
+    });
 }
 
 // Absensi page functionality
