@@ -314,7 +314,10 @@ if (document.getElementById('hamburger')) {
                 hideLoading();
                 showMessage('Formulir berhasil dikirim!');
                 izinForm.reset();
-                loadStats(); // Refresh stats
+                // Refresh stats after form submission
+                setTimeout(() => {
+                    loadStats();
+                }, 1000);
             } catch (error) {
                 hideLoading();
                 showMessage('Gagal mengirim formulir: ' + error.message, 'error');
@@ -322,35 +325,62 @@ if (document.getElementById('hamburger')) {
         });
     }
 
-    // Load stats
+    // Load stats function - FIXED VERSION
     async function loadStats() {
+        console.log('Loading stats...');
+        
         try {
-            const today = new Date().toISOString().split('T')[0];
-            const now = new Date();
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const today = new Date();
+            const todayString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
             
-            // Get today's attendance count (all students who marked "Hadir" today)
+            // 1. Get today's attendance count (all students who marked "Hadir" today)
+            console.log('Fetching today attendance for date:', todayString);
             const todayAttendanceQuery = await db.collection('absensi')
-                .where('tanggal', '==', today)
+                .where('tanggal', '==', todayString)
                 .where('keterangan', '==', 'Hadir')
                 .get();
             
-            document.getElementById('todayAttendance').textContent = todayAttendanceQuery.size;
+            const todayCount = todayAttendanceQuery.size;
+            console.log('Today attendance count:', todayCount);
+            document.getElementById('todayAttendance').textContent = todayCount;
 
-            // Get total izin/sakit forms (all students)
+            // 2. Get total izin/sakit forms (all students)
+            console.log('Fetching total izin/sakit forms...');
             const izinSakitQuery = await db.collection('izin_sakit').get();
-            document.getElementById('totalAbsence').textContent = izinSakitQuery.size;
+            const totalIzinSakit = izinSakitQuery.size;
+            console.log('Total izin/sakit count:', totalIzinSakit);
+            document.getElementById('totalAbsence').textContent = totalIzinSakit;
 
-            // Get current user's monthly attendance
+            // 3. Get current user's monthly attendance
             if (currentUser) {
+                console.log('Fetching monthly attendance for user:', currentUser.uid);
                 const monthlyAttendanceQuery = await db.collection('absensi')
                     .where('userId', '==', currentUser.uid)
-                    .where('createdAt', '>=', startOfMonth)
                     .where('keterangan', '==', 'Hadir')
                     .get();
                 
-                document.getElementById('monthlyAttendance').textContent = monthlyAttendanceQuery.size;
+                // Filter by month manually since Firestore doesn't support date range with string dates
+                let monthlyCount = 0;
+                monthlyAttendanceQuery.forEach(doc => {
+                    const data = doc.data();
+                    if (data.createdAt && data.createdAt.toDate() >= startOfMonth) {
+                        monthlyCount++;
+                    } else if (data.tanggal) {
+                        const attendanceDate = new Date(data.tanggal);
+                        if (attendanceDate >= startOfMonth) {
+                            monthlyCount++;
+                        }
+                    }
+                });
+                
+                console.log('Monthly attendance count:', monthlyCount);
+                document.getElementById('monthlyAttendance').textContent = monthlyCount;
+            } else {
+                document.getElementById('monthlyAttendance').textContent = '0';
             }
+            
+            console.log('Stats loaded successfully');
         } catch (error) {
             console.error('Error loading stats:', error);
             // Set default values on error
@@ -360,14 +390,72 @@ if (document.getElementById('hamburger')) {
         }
     }
 
-    // Initialize main page
-    auth.onAuthStateChanged((user) => {
+    // Initialize main page with proper auth state handling
+    auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
-            loadUserInfo();
-            loadStats();
+            console.log('User authenticated:', user.uid);
+            await loadUserInfo();
+            await loadStats();
+            
+            // Set up real-time listeners for stats updates
+            setupStatsListeners();
+        } else {
+            console.log('No user authenticated');
+            // Set default values when no user
+            document.getElementById('todayAttendance').textContent = '0';
+            document.getElementById('totalAbsence').textContent = '0';
+            document.getElementById('monthlyAttendance').textContent = '0';
         }
     });
+
+    // Set up real-time listeners for automatic stats updates
+    function setupStatsListeners() {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Listen for changes in today's attendance
+        db.collection('absensi')
+            .where('tanggal', '==', today)
+            .where('keterangan', '==', 'Hadir')
+            .onSnapshot((snapshot) => {
+                console.log('Today attendance updated:', snapshot.size);
+                document.getElementById('todayAttendance').textContent = snapshot.size;
+            });
+
+        // Listen for changes in izin/sakit forms
+        db.collection('izin_sakit')
+            .onSnapshot((snapshot) => {
+                console.log('Izin/sakit forms updated:', snapshot.size);
+                document.getElementById('totalAbsence').textContent = snapshot.size;
+            });
+
+        // Listen for changes in current user's attendance
+        if (currentUser) {
+            db.collection('absensi')
+                .where('userId', '==', currentUser.uid)
+                .where('keterangan', '==', 'Hadir')
+                .onSnapshot((snapshot) => {
+                    const today = new Date();
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    
+                    let monthlyCount = 0;
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.createdAt && data.createdAt.toDate() >= startOfMonth) {
+                            monthlyCount++;
+                        } else if (data.tanggal) {
+                            const attendanceDate = new Date(data.tanggal);
+                            if (attendanceDate >= startOfMonth) {
+                                monthlyCount++;
+                            }
+                        }
+                    });
+                    
+                    console.log('Monthly attendance updated:', monthlyCount);
+                    document.getElementById('monthlyAttendance').textContent = monthlyCount;
+                });
+        }
+    }
 }
 
 // Absensi page functionality
@@ -412,12 +500,14 @@ if (document.getElementById('absensiForm')) {
         e.preventDefault();
         showLoading();
 
+        const today = new Date().toISOString().split('T')[0];
+        
         const formData = {
             nama: document.getElementById('absensiNama').value,
             kelas: document.getElementById('absensiKelas').value,
             keterangan: document.getElementById('absensiKeterangan').value,
             alasan: document.getElementById('absensiAlasan').value,
-            tanggal: new Date().toISOString().split('T')[0],
+            tanggal: today, // Use consistent date format
             userId: currentUser ? currentUser.uid : null,
             userEmail: currentUser ? currentUser.email : null,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
