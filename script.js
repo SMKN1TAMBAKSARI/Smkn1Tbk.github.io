@@ -270,20 +270,25 @@ if (document.getElementById('hamburger')) {
         }
     });
 
-    // Load user info
+    // Load user info and auto-fill forms
     async function loadUserInfo() {
         if (currentUser) {
             try {
                 const userDoc = await db.collection('users').doc(currentUser.uid).get();
                 if (userDoc.exists) {
                     const userData = userDoc.data();
+                    
+                    // Update sidebar with user info
                     document.getElementById('userName').textContent = userData.name || 'Nama Siswa';
                     document.getElementById('userClass').textContent = userData.class || 'Kelas';
                     
-                    // Pre-fill forms with user data
+                    // Auto-fill izin form with readonly fields
                     const izinNama = document.getElementById('izinNama');
                     if (izinNama) {
                         izinNama.value = userData.name || '';
+                        izinNama.readOnly = true; // Make it readonly
+                        izinNama.style.backgroundColor = '#f8f9fa';
+                        izinNama.style.cursor = 'not-allowed';
                     }
                 }
             } catch (error) {
@@ -314,6 +319,8 @@ if (document.getElementById('hamburger')) {
                 hideLoading();
                 showMessage('Formulir berhasil dikirim!');
                 izinForm.reset();
+                // Reload user info to refill the readonly name field
+                await loadUserInfo();
                 // Refresh stats after form submission
                 setTimeout(() => {
                     loadStats();
@@ -499,7 +506,7 @@ if (document.getElementById('absensiForm')) {
         }
     });
 
-    // Load user info for absensi form
+    // Load user info for absensi form and make fields readonly
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
@@ -507,8 +514,24 @@ if (document.getElementById('absensiForm')) {
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (userDoc.exists) {
                     const userData = userDoc.data();
-                    document.getElementById('absensiNama').value = userData.name || '';
-                    document.getElementById('absensiKelas').value = userData.class || '';
+                    
+                    // Auto-fill and make readonly
+                    const namaField = document.getElementById('absensiNama');
+                    const kelasField = document.getElementById('absensiKelas');
+                    
+                    if (namaField) {
+                        namaField.value = userData.name || '';
+                        namaField.readOnly = true;
+                        namaField.style.backgroundColor = '#f8f9fa';
+                        namaField.style.cursor = 'not-allowed';
+                    }
+                    
+                    if (kelasField) {
+                        kelasField.value = userData.class || '';
+                        kelasField.readOnly = true;
+                        kelasField.style.backgroundColor = '#f8f9fa';
+                        kelasField.style.cursor = 'not-allowed';
+                    }
                 }
             } catch (error) {
                 console.error('Error loading user info:', error);
